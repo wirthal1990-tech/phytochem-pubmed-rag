@@ -19,6 +19,7 @@ data/raw/
 
 # Exceptions (sample files are allowed)
 !data/sample/README.md
+!data/compounds_with_activities.csv
 
 # Environment
 .env
