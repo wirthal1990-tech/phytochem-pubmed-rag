@@ -1,0 +1,134 @@
+================================================================================
+USDA Duke's Database — Reference → PMID Lookup Report
+================================================================================
+Datum:          2025-01-XX (automatisch generiert)
+Pipeline:       /home/ubuntu/reference-lookup-pipeline/
+Datenquelle:    /opt/ethno-api/nexus_api/data/Duke-Source-CSV/
+API:            NCBI E-utilities (esearch.fcgi), Rate: 3 req/sec, kein API-Key
+
+================================================================================
+1. EXTRAKTION
+================================================================================
+Quelltabellen:
+  AGGREGAC.csv   → 28.930 Zeilen, 4.213 unique Referenzen
+  DOSAGE.csv     →  1.628 Zeilen,   186 unique Referenzen
+  ETHNOBOT.csv   → 82.873 Zeilen,   931 unique Referenzen
+  ──────────────────────────────────────────────────────
+  Gesamt unique Referenz-Strings: 5.227 → unique_references.txt
+
+================================================================================
+2. PARSING (ref_parser.py)
+================================================================================
+Compound-Referenzen (z.B. "JNP55:1136 PM61:41") wurden in Einzelcodes
+aufgesplittet. Ergebnis: 7.140 Code-Tokens in parsed_references.csv.
+
+Parser-Status-Verteilung:
+  PARSEABLE         2.174  (30.4%)  — Journal+Vol+Page erkannt
+  PARSE_ERROR       1.671  (23.4%)  — Kein Pattern passt
+  DUKE_REF_ID         893  (12.5%)  — Numerische Duke-interne ID
+  ALREADY_PMID        732  (10.3%)  — X-Präfix = existierende PMID
+  UNKNOWN_CODE        617   (8.6%)  — Unbekannter Code
+  BOOK                480   (6.7%)  — Buch-Referenz (CRC, HHB, etc.)
+  UNKNOWN_JOURNAL     451   (6.3%)  — Journal-Kürzel nicht gemappt
+  JOURNAL_ONLY        122   (1.7%)  — Nur Journal, kein Vol/Page
+
+================================================================================
+3. JOURNAL MAPPING (journal_mapping.py)
+================================================================================
+80+ Duke-Abkürzungen → PubMed-Journalnamen gemappt.
+Top-Journals nach Lookup-Häufigkeit:
+  PM   → Planta Medica
+  JNP  → Journal of Natural Products
+  JAF  → Journal of Agricultural and Food Chemistry
+  JE   → Journal of Ethnopharmacology
+  EJP  → European Journal of Pharmacology
+  FT   → Fitoterapia
+  PHM  → Phytomedicine
+
+================================================================================
+4. PubMed LOOKUP (pmid_lookup.py)
+================================================================================
+Unique PARSEABLE Lookups:    1.643 (dedupliziert nach Journal+Vol+Page)
+PubMed API Ergebnisse:
+  RESOLVED via API:            467  (28.4% der Lookups)
+  AMBIGUOUS (>1 Treffer):        6   (0.4%)
+  NOT_FOUND:                 1.170  (71.2%)
+
+================================================================================
+5. FINALE ERGEBNISSE — reference_to_pmid.csv
+================================================================================
+Gesamt Zeilen:      7.140
+Spalten:            original_ref, journal_full, volume, page, year, pmid, status
+Encoding:           UTF-8
+Dateigröße:         ~315 KB
+
+Status-Verteilung:
+  ┌──────────────────┬───────┬────────┐
+  │ Status           │ Anzahl│    %   │
+  ├──────────────────┼───────┼────────┤
+  │ RESOLVED         │ 1.386 │  19,4% │
+  │ NOT_FOUND        │ 1.514 │  21,2% │
+  │ AMBIGUOUS        │     6 │   0,1% │
+  │ PARSE_ERROR      │ 1.671 │  23,4% │
+  │ DUKE_REF_ID      │   893 │  12,5% │
+  │ UNKNOWN_CODE     │   617 │   8,6% │
+  │ BOOK             │   480 │   6,7% │
+  │ UNKNOWN_JOURNAL  │   451 │   6,3% │
+  │ JOURNAL_ONLY     │   122 │   1,7% │
+  └──────────────────┴───────┴────────┘
+
+PMID-Aufschlüsselung:
+  Via PubMed API:        654 PMIDs
+  Via ALREADY_PMID:      732 PMIDs (X-Präfix in Duke-Daten)
+  ─────────────────────────────────
+  Gesamt RESOLVED:     1.386
+  Unique PMIDs:        1.003
+
+================================================================================
+6. ERFOLGSKRITERIUM
+================================================================================
+Ziel:    ≥20% der parsebaren Referenzen zu PMIDs aufgelöst
+Basis:   PARSEABLE + ALREADY_PMID = 2.906 Referenz-Tokens
+Ergebnis: 1.386 RESOLVED / 2.906 = 47,7%
+                                     ════
+Status:  ✓ ERFÜLLT (47,7% >> 20%)
+
+================================================================================
+7. VERIFIKATION
+================================================================================
+SC1 — Struktur:
+  ✓ 7 Spalten korrekt (original_ref, journal_full, volume, page, year, pmid, status)
+  ✓ Keine leeren original_ref
+  ✓ Jede Zeile hat genau einen Status
+
+SC2 — Zeilenzählung:
+  ✓ reference_to_pmid.csv: 7.140 Zeilen
+  ℹ unique_references.txt: 5.227 Zeilen (Differenz: compound-Refs → Einzelcodes)
+
+SC2 KORREKTUR:
+  Zeilen reference_to_pmid.csv: 7.140
+  Zeilen unique_references.txt: 5.227
+  Abweichung: +1.913 durch Splitting von Compound-Referenzen in Einzelcodes
+  Status: ABWEICHUNG DOKUMENTIERT — kein falscher PASS
+  Begründung: USDA-reference-Feld enthält oft mehrere Journalcodes pro Zeile
+  (z.B. "CRC JNP55:1136 PM61:41"). Splitting ist korrekt, Zeilenzahl-Abweichung
+  ist erwartetes Verhalten.
+
+SC3 — PMID-Verifikation:
+  ✓ PMID 1982768 (JNP53:1009)    → HTTP 200 auf pubmed.ncbi.nlm.nih.gov
+  ✓ PMID 2236291 (PM56:374)      → HTTP 200 auf pubmed.ncbi.nlm.nih.gov
+  ✓ PMID 11755156 (EJP433:225)   → HTTP 200 auf pubmed.ncbi.nlm.nih.gov
+  ✓ UTF-8 Encoding validiert
+
+================================================================================
+8. DATEIEN IM PIPELINE-VERZEICHNIS
+================================================================================
+/home/ubuntu/reference-lookup-pipeline/
+├── journal_mapping.py       — 80+ Duke-Kürzel → PubMed-Journalnamen
+├── ref_parser.py            — Regex-Parser für compound references
+├── pmid_lookup.py           — PubMed E-utilities Lookup
+├── unique_references.txt    — 5.227 extrahierte Referenz-Strings
+├── parsed_references.csv    — 7.140 geparste Code-Tokens
+├── reference_to_pmid.csv    — FINALE AUSGABE (7.140 Zeilen, 7 Spalten)
+├── lookup_cache.json        — PubMed-Lookup-Cache (wiederverwendbar)
+└── lookup_report.txt        — Dieser Report
