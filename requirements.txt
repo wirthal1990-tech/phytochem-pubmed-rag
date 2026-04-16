@@ -1,0 +1,14 @@
+# Phase 1 — PMID Collection
+requests>=2.31.0          # PubChem + PubMed API calls
+pandas>=2.0.0             # Dataset handling
+pyarrow>=14.0.0           # Parquet read/write
+tqdm>=4.66.0              # Progress bars for batch processing
+
+# Phase 2 — PGVectorRAG
+psycopg2-binary>=2.9.9    # PostgreSQL connection
+pgvector>=0.2.4           # pgvector Python client
+# PGVectorRAG: see https://github.com/pgvector/pgvector
+# Additional RAG dependencies to be determined after POC
+
+# Utils
+python-dotenv>=1.0.0      # Environment variable management

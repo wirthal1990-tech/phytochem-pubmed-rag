@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+
+# Data files (never commit actual dataset)
+*.json
+*.parquet
+*.csv
+*.tsv
+data/abstracts/
+data/raw/
+
+# Exceptions (sample files are allowed)
+!data/sample/README.md
+
+# Environment
+.env
+.env.*
+*.env
+
+# Secrets
+secrets/
+*.key
+*.pem
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Cache
+.cache/
+pubchem_cache.json
+pubmed_cache.json
