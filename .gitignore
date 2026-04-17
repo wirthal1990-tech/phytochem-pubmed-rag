@@ -20,6 +20,7 @@ data/raw/
 # Exceptions (sample files are allowed)
 !data/sample/README.md
 !data/compounds_with_activities.csv
+!data/compound_synonyms.csv
 !data/reference_to_pmid.csv
 !data/lookup_report.txt
 
